@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
+import 'package:audioplayers/audio_cache.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:volume_control/volume_control.dart';
 import 'package:vibration/vibration.dart';
 
 class AlertPage extends StatefulWidget {
-  final player = AudioPlayer();
+  final player = AudioCache();
 
   @override
   _AlertPageState createState() => _AlertPageState();
 }
 
 class _AlertPageState extends State<AlertPage> {
+  AudioPlayer audioPlayer;
+
   _backToMap() {
-    widget.player.stop();
+    audioPlayer.stop();
     Vibration.cancel();
     Navigator.pop(context);
   }
@@ -21,9 +24,7 @@ class _AlertPageState extends State<AlertPage> {
   Widget build(BuildContext context) {
     Vibration.vibrate(pattern: [250, 1000], repeat: 1);
     // VolumeControl.setVolume(1);
-    widget.player.setAsset('assets/sounds/alarm.mp3');
-    widget.player.setLoopMode(LoopMode.one);
-    widget.player.play();
+    widget.player.loop('sounds/alarm.mp3').then((value) => audioPlayer = value);
 
     return WillPopScope(
       onWillPop: () => _backToMap(),
