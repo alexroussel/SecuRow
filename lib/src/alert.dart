@@ -4,9 +4,6 @@ import 'package:volume_control/volume_control.dart';
 import 'package:vibration/vibration.dart';
 
 class AlertPage extends StatefulWidget {
-  // AlertPage({Key key, this.title}) : super(key: key);
-
-  // final String title;
   final player = AudioPlayer();
 
   @override
@@ -30,11 +27,11 @@ class _AlertPageState extends State<AlertPage> {
 
     return WillPopScope(
       onWillPop: () => _backToMap(),
-      child: Scaffold(
-        backgroundColor: Colors.red[800],
-        body: GestureDetector(
-          onTap: () => _backToMap(),
-          child: Center(
+      child: GestureDetector(
+        onTap: () => _backToMap(),
+        child: Scaffold(
+          backgroundColor: Colors.red[800],
+          body: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
