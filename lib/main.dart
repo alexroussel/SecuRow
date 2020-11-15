@@ -32,48 +32,69 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: FlutterMap(
-        options: new MapOptions(
-          center: new LatLng(45.8, 4.95),
-          zoom: 15.0,
-        ),
-        layers: [
-          new TileLayerOptions(
-              urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-              subdomains: ['a', 'b', 'c']),
-          new MarkerLayerOptions(
-            markers: [
-              new Marker(
-                width: 80.0,
-                height: 80.0,
-                point: new LatLng(45.806831, 4.954534),
-                builder: (ctx) => Icon(Icons.location_on, size: 40),
-                // anchorPos: AnchorPos.align(AnchorAlign.top),
-              ),
-              new Marker(
-                width: 80.0,
-                height: 80.0,
-                point: new LatLng(45.8, 4.95),
-                builder: (ctx) =>
-                    Icon(Icons.directions_boat_outlined, size: 40),
-                // anchorPos: AnchorPos.align(AnchorAlign.top),
-              ),
-            ],
-          ),
+  Future<bool> _onBackPressed() {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Voulez-vous vraiment quitter SecuRow ?'),
+        actions: <Widget>[
+          FlatButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text('Non')),
+          FlatButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text('Oui')),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => AlertPage()));
-        },
-        child: Icon(Icons.notifications_active),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: _onBackPressed,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(widget.title),
+        ),
+        body: FlutterMap(
+          options: new MapOptions(
+            center: new LatLng(45.8, 4.95),
+            zoom: 15.0,
+          ),
+          layers: [
+            new TileLayerOptions(
+                urlTemplate:
+                    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                subdomains: ['a', 'b', 'c']),
+            new MarkerLayerOptions(
+              markers: [
+                new Marker(
+                  width: 80.0,
+                  height: 80.0,
+                  point: new LatLng(45.806831, 4.954534),
+                  builder: (ctx) => Icon(Icons.location_on, size: 40),
+                  // anchorPos: AnchorPos.align(AnchorAlign.top),
+                ),
+                new Marker(
+                  width: 80.0,
+                  height: 80.0,
+                  point: new LatLng(45.8, 4.95),
+                  builder: (ctx) =>
+                      Icon(Icons.directions_boat_outlined, size: 40),
+                  // anchorPos: AnchorPos.align(AnchorAlign.top),
+                ),
+              ],
+            ),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => AlertPage()));
+          },
+          child: Icon(Icons.notifications_active),
+        ),
       ),
     );
   }
