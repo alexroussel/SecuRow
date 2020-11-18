@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:latlong/latlong.dart';
+import 'package:user_location/user_location.dart';
 
 import 'src/alert.dart';
 
@@ -17,7 +18,7 @@ class SecurowApp extends StatelessWidget {
         primarySwatch: Colors.deepPurple,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'SecuRow le S'),
+      home: MyHomePage(title: 'SecuRow'),
     );
   }
 }
@@ -32,6 +33,10 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  MapController mapController = MapController();
+  UserLocationOptions userLocationOptions;
+  List<Marker> markers = [];
+
   Future<bool> _onBackPressed() {
     return showDialog(
       context: context,
@@ -51,6 +56,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    userLocationOptions = UserLocationOptions(
+      context: context,
+      mapController: mapController,
+      markers: markers,
+    );
     return WillPopScope(
       onWillPop: _onBackPressed,
       child: Scaffold(
@@ -61,6 +71,9 @@ class _MyHomePageState extends State<MyHomePage> {
           options: new MapOptions(
             center: new LatLng(45.8, 4.95),
             zoom: 15.0,
+            plugins: [
+              UserLocationPlugin(),
+            ],
           ),
           layers: [
             new TileLayerOptions(
@@ -86,7 +99,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ],
             ),
+            MarkerLayerOptions(markers: markers),
+            userLocationOptions,
           ],
+          mapController: mapController,
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
