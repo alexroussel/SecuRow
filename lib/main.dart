@@ -1,7 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:latlong/latlong.dart';
 import 'package:user_location/user_location.dart';
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
 import 'src/alert.dart';
 
@@ -33,9 +36,40 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  // Map attributes
   MapController mapController = MapController();
   UserLocationOptions userLocationOptions;
   List<Marker> markers = [];
+
+  // Bluetooth attributes
+  BluetoothDevice selectedDevice = BluetoothDevice();
+  BluetoothConnection connection;
+  String _messageBuffer = '';
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Get bonded devices
+    List<BluetoothDevice> devices = List<BluetoothDevice>();
+    FlutterBluetoothSerial.instance
+        .getBondedDevices()
+        .then((List<BluetoothDevice> bondedDevices) {
+      devices = bondedDevices;
+
+      // Select right device in bonded devices
+      selectedDevice = devices.firstWhere((device) => device.name == 'SECUROW');
+
+      BluetoothConnection.toAddress(selectedDevice.address).then((_connection) {
+        print('Connected to the device');
+        connection = _connection;
+        connection.input.listen(_onDataReceived);
+      }).catchError((error) {
+        print('Cannot connect, exception occured');
+        print(error);
+      });
+    });
+  }
 
   Future<bool> _onBackPressed() {
     return showDialog(
@@ -61,6 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
       mapController: mapController,
       markers: markers,
     );
+
     return WillPopScope(
       onWillPop: _onBackPressed,
       child: Scaffold(
@@ -113,5 +148,48 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
     );
+  }
+
+  void _onDataReceived(Uint8List data) {
+    // Allocate buffer for parsed data
+    int backspacesCounter = 0;
+    data.forEach((byte) {
+      if (byte == 8 || byte == 127) {
+        backspacesCounter++;
+      }
+    });
+    Uint8List buffer = Uint8List(data.length - backspacesCounter);
+    int bufferIndex = buffer.length;
+
+    // Apply backspace control character
+    backspacesCounter = 0;
+    for (int i = data.length - 1; i >= 0; i--) {
+      if (data[i] == 8 || data[i] == 127) {
+        backspacesCounter++;
+      } else {
+        if (backspacesCounter > 0) {
+          backspacesCounter--;
+        } else {
+          buffer[--bufferIndex] = data[i];
+        }
+      }
+    }
+
+    // Create message if there is new line character
+    String dataString = String.fromCharCodes(buffer);
+    int index = buffer.indexOf(13);
+    if (~index != 0) {
+      String message = backspacesCounter > 0
+          ? _messageBuffer.substring(
+              0, _messageBuffer.length - backspacesCounter)
+          : _messageBuffer + dataString.substring(0, index);
+      print(message);
+      _messageBuffer = dataString.substring(index);
+    } else {
+      _messageBuffer = (backspacesCounter > 0
+          ? _messageBuffer.substring(
+              0, _messageBuffer.length - backspacesCounter)
+          : _messageBuffer + dataString);
+    }
   }
 }
