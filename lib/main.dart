@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -41,6 +43,7 @@ class _MyHomePageState extends State<MyHomePage> {
   MapController mapController = MapController();
   UserLocationOptions userLocationOptions;
   List<Marker> markers = [];
+  List<double> rescueBoatPos = [0, 0];
 
   // Bluetooth attributes
   BluetoothDevice selectedDevice = BluetoothDevice();
@@ -61,6 +64,17 @@ class _MyHomePageState extends State<MyHomePage> {
       connection.input.listen(_onDataReceived);
     } catch (error) {
       print(error);
+    }
+  }
+
+  void handleMessage(String message) {
+    Map<String, dynamic> parsedMessage = jsonDecode(message);
+    if (parsedMessage['data']['type'] == "alert") {
+      goAlertPage();
+      setState(() {
+        rescueBoatPos[0] = parsedMessage['data']['lat'];
+        rescueBoatPos[1] = parsedMessage['data']['lng'];
+      });
     }
   }
 
@@ -125,18 +139,18 @@ class _MyHomePageState extends State<MyHomePage> {
                 new Marker(
                   width: 80.0,
                   height: 80.0,
-                  point: new LatLng(45.806831, 4.954534),
+                  point: new LatLng(rescueBoatPos[0], rescueBoatPos[1]),
                   builder: (ctx) => Icon(Icons.location_on, size: 40),
                   // anchorPos: AnchorPos.align(AnchorAlign.top),
                 ),
-                new Marker(
-                  width: 80.0,
-                  height: 80.0,
-                  point: new LatLng(45.8, 4.95),
-                  builder: (ctx) =>
-                      Icon(Icons.directions_boat_outlined, size: 40),
-                  // anchorPos: AnchorPos.align(AnchorAlign.top),
-                ),
+                // new Marker(
+                //   width: 80.0,
+                //   height: 80.0,
+                //   point: new LatLng(45.8, 4.95),
+                //   builder: (ctx) =>
+                //       Icon(Icons.directions_boat_outlined, size: 40),
+                //   // anchorPos: AnchorPos.align(AnchorAlign.top),
+                // ),
               ],
             ),
             MarkerLayerOptions(markers: markers),
@@ -185,7 +199,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ? _messageBuffer.substring(
               0, _messageBuffer.length - backspacesCounter)
           : _messageBuffer + dataString.substring(0, index);
-      goAlertPage();
+      handleMessage(message);
       print(message);
       _messageBuffer = dataString.substring(index);
     } else {
