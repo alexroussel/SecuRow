@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -46,29 +47,28 @@ class _MyHomePageState extends State<MyHomePage> {
   BluetoothConnection connection;
   String _messageBuffer = '';
 
+  void handleBluetoothConnection() async {
+    // Get bonded devices
+    List<BluetoothDevice> devices = List<BluetoothDevice>();
+    devices = await FlutterBluetoothSerial.instance.getBondedDevices();
+
+    // Select right device in bonded devices
+    selectedDevice = devices.firstWhere((device) => device.name == 'SECUROW');
+
+    try {
+      connection = await BluetoothConnection.toAddress(selectedDevice.address);
+      print('Connected to the device');
+      connection.input.listen(_onDataReceived);
+    } catch (error) {
+      print(error);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
 
-    // Get bonded devices
-    List<BluetoothDevice> devices = List<BluetoothDevice>();
-    FlutterBluetoothSerial.instance
-        .getBondedDevices()
-        .then((List<BluetoothDevice> bondedDevices) {
-      devices = bondedDevices;
-
-      // Select right device in bonded devices
-      selectedDevice = devices.firstWhere((device) => device.name == 'SECUROW');
-
-      BluetoothConnection.toAddress(selectedDevice.address).then((_connection) {
-        print('Connected to the device');
-        connection = _connection;
-        connection.input.listen(_onDataReceived);
-      }).catchError((error) {
-        print('Cannot connect, exception occured');
-        print(error);
-      });
-    });
+    handleBluetoothConnection();
   }
 
   Future<bool> _onBackPressed() {
@@ -86,6 +86,11 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
     );
+  }
+
+  void goAlertPage() {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => AlertPage()));
   }
 
   @override
@@ -140,10 +145,7 @@ class _MyHomePageState extends State<MyHomePage> {
           mapController: mapController,
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => AlertPage()));
-          },
+          onPressed: goAlertPage,
           child: Icon(Icons.notifications_active),
         ),
       ),
@@ -183,6 +185,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ? _messageBuffer.substring(
               0, _messageBuffer.length - backspacesCounter)
           : _messageBuffer + dataString.substring(0, index);
+      goAlertPage();
       print(message);
       _messageBuffer = dataString.substring(index);
     } else {
