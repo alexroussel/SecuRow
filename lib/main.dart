@@ -72,14 +72,14 @@ class _MyHomePageState extends State<MyHomePage> {
     if (parsedMessage['data']['type'] == "alert") {
       goAlertPage();
       setState(() {
-        rescueBoatPos[0] = parsedMessage['data']['lat'];
-        rescueBoatPos[1] = parsedMessage['data']['lng'];
+        rescueBoatPos[0] = parsedMessage['data']['lat'].toDouble();
+        rescueBoatPos[1] = parsedMessage['data']['lng'].toDouble();
       });
     } else if (parsedMessage['data']['type'] == "cancel") {
       goCancelPage();
       setState(() {
-        rescueBoatPos[0] = 0;
-        rescueBoatPos[1] = 0;
+        rescueBoatPos[0] = 0.0;
+        rescueBoatPos[1] = 0.0;
       });
     }
   }
@@ -113,7 +113,7 @@ class _MyHomePageState extends State<MyHomePage> {
         context,
         MaterialPageRoute(
             builder: (context) => AlertPage())).then((value) => sendMessage(
-        '{"data":{"id":"1","type":"seen"},"header": {"md5": "f32f43ca192ef970e69aebdbf078b015"}}'));
+        '{"data":{"type":"seen"},"header": {"md5": "f32f43ca192ef970e69aebdbf078b015"}}'));
   }
 
   void goCancelPage() {
