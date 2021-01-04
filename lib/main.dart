@@ -61,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       connection = await BluetoothConnection.toAddress(selectedDevice.address);
       print('Connected to the device');
-      connection.input.listen(_onDataReceived);
+      connection.input.listen(onDataReceived);
     } catch (error) {
       print(error);
     }
@@ -110,7 +110,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void goAlertPage() {
     Navigator.push(
-        context, MaterialPageRoute(builder: (context) => AlertPage()));
+        context,
+        MaterialPageRoute(
+            builder: (context) => AlertPage())).then((value) => sendMessage(
+        '{"data":{"id":"1","type":"seen"},"header": {"md5": "f32f43ca192ef970e69aebdbf078b015"}}'));
   }
 
   void goCancelPage() {
@@ -169,7 +172,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void _onDataReceived(Uint8List data) {
+  void onDataReceived(Uint8List data) {
     // Allocate buffer for parsed data
     int backspacesCounter = 0;
     data.forEach((byte) {
@@ -210,6 +213,20 @@ class _MyHomePageState extends State<MyHomePage> {
           ? _messageBuffer.substring(
               0, _messageBuffer.length - backspacesCounter)
           : _messageBuffer + dataString);
+    }
+  }
+
+  void sendMessage(String text) async {
+    text = text.trim();
+
+    if (text.length > 0) {
+      try {
+        connection.output.add(utf8.encode(text + "\r\n"));
+        await connection.output.allSent;
+      } catch (e) {
+        // Ignore error, but notify state
+        setState(() {});
+      }
     }
   }
 }
