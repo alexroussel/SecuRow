@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:latlong/latlong.dart';
+import 'package:securow/src/cancel.dart';
 import 'package:user_location/user_location.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
@@ -75,6 +75,12 @@ class _MyHomePageState extends State<MyHomePage> {
         rescueBoatPos[0] = parsedMessage['data']['lat'];
         rescueBoatPos[1] = parsedMessage['data']['lng'];
       });
+    } else if (parsedMessage['data']['type'] == "cancel") {
+      goCancelPage();
+      setState(() {
+        rescueBoatPos[0] = 0;
+        rescueBoatPos[1] = 0;
+      });
     }
   }
 
@@ -105,6 +111,11 @@ class _MyHomePageState extends State<MyHomePage> {
   void goAlertPage() {
     Navigator.push(
         context, MaterialPageRoute(builder: (context) => AlertPage()));
+  }
+
+  void goCancelPage() {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => CancelPage()));
   }
 
   @override
@@ -143,14 +154,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   builder: (ctx) => Icon(Icons.location_on, size: 40),
                   // anchorPos: AnchorPos.align(AnchorAlign.top),
                 ),
-                // new Marker(
-                //   width: 80.0,
-                //   height: 80.0,
-                //   point: new LatLng(45.8, 4.95),
-                //   builder: (ctx) =>
-                //       Icon(Icons.directions_boat_outlined, size: 40),
-                //   // anchorPos: AnchorPos.align(AnchorAlign.top),
-                // ),
               ],
             ),
             MarkerLayerOptions(markers: markers),
