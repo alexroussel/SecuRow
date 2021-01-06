@@ -68,19 +68,23 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void handleMessage(String message) {
-    Map<String, dynamic> parsedMessage = jsonDecode(message);
-    if (parsedMessage['data']['type'] == "alert") {
-      goAlertPage();
-      setState(() {
-        rescueBoatPos[0] = parsedMessage['data']['lat'].toDouble();
-        rescueBoatPos[1] = parsedMessage['data']['lng'].toDouble();
-      });
-    } else if (parsedMessage['data']['type'] == "cancel") {
-      goCancelPage();
-      setState(() {
-        rescueBoatPos[0] = 0.0;
-        rescueBoatPos[1] = 0.0;
-      });
+    try {
+      Map<String, dynamic> parsedMessage = jsonDecode(message);
+      if (parsedMessage['data']['type'] == "alert") {
+        goAlertPage();
+        setState(() {
+          rescueBoatPos[0] = parsedMessage['data']['lat'].toDouble();
+          rescueBoatPos[1] = parsedMessage['data']['lng'].toDouble();
+        });
+      } else if (parsedMessage['data']['type'] == "cancel") {
+        goCancelPage();
+        setState(() {
+          rescueBoatPos[0] = 0.0;
+          rescueBoatPos[1] = 0.0;
+        });
+      }
+    } catch (error) {
+      print(error);
     }
   }
 
@@ -154,8 +158,11 @@ class _MyHomePageState extends State<MyHomePage> {
                   width: 80.0,
                   height: 80.0,
                   point: new LatLng(rescueBoatPos[0], rescueBoatPos[1]),
-                  builder: (ctx) => Icon(Icons.location_on, size: 40),
-                  // anchorPos: AnchorPos.align(AnchorAlign.top),
+                  builder: (ctx) => Icon(
+                    Icons.location_on,
+                    size: 40,
+                    color: Colors.red[800],
+                  ),
                 ),
               ],
             ),
@@ -163,10 +170,6 @@ class _MyHomePageState extends State<MyHomePage> {
             userLocationOptions,
           ],
           mapController: mapController,
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: goAlertPage,
-          child: Icon(Icons.notifications_active),
         ),
       ),
     );
@@ -206,7 +209,6 @@ class _MyHomePageState extends State<MyHomePage> {
               0, _messageBuffer.length - backspacesCounter)
           : _messageBuffer + dataString.substring(0, index);
       handleMessage(message);
-      print(message);
       _messageBuffer = dataString.substring(index);
     } else {
       _messageBuffer = (backspacesCounter > 0

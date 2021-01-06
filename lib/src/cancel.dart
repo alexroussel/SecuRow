@@ -23,7 +23,7 @@ class _CancelPageState extends State<CancelPage> {
   @override
   Widget build(BuildContext context) {
     Vibration.vibrate(pattern: [300, 300, 1000], repeat: 1);
-    // VolumeControl.setVolume(1);
+    VolumeControl.setVolume(1);
     widget.player
         .loop('sounds/cancel.mp3')
         .then((value) => audioPlayer = value);

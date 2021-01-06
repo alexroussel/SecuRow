@@ -23,7 +23,7 @@ class _AlertPageState extends State<AlertPage> {
   @override
   Widget build(BuildContext context) {
     Vibration.vibrate(pattern: [250, 1000], repeat: 1);
-    // VolumeControl.setVolume(1);
+    VolumeControl.setVolume(1);
     widget.player.loop('sounds/alarm.mp3').then((value) => audioPlayer = value);
 
     return WillPopScope(
